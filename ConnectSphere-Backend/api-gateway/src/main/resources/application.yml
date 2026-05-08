@@ -1,0 +1,103 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      mvc:
+        routes:
+          # Auth / User Service
+          - id: auth-service
+            uri: lb://auth-user-service
+            predicates:
+              - Path=/api/v1/auth/**, /api/v1/users/**, /oauth2/**, /login/oauth2/**
+
+          # Post Service
+          - id: post-service
+            uri: lb://post-service
+            predicates:
+              - Path=/api/v1/posts/**
+
+          # Comment Service
+          - id: comment-service
+            uri: lb://comment-service
+            predicates:
+              - Path=/api/v1/comments/**
+
+          # Like Service
+          - id: like-service
+            uri: lb://like-service
+            predicates:
+              - Path=/api/v1/likes/**
+
+          # Follow Service
+          - id: follow-service
+            uri: lb://follow-service
+            predicates:
+              - Path=/api/v1/follows, /api/v1/follows/**
+
+          # Notification Service
+          - id: notification-service
+            uri: lb://notification-service
+            predicates:
+              - Path=/api/v1/notifications/**
+
+          # Media / Story Service
+          - id: media-service
+            uri: lb://media-service
+            predicates:
+              - Path=/api/v1/media/**, /api/v1/stories/**
+
+          # Search / Hashtag Service
+          - id: search-service
+            uri: lb://search-service
+            predicates:
+              - Path=/api/v1/search/**, /api/v1/hashtags/**
+
+          # Payment Service (routed to auth-user-service)
+          - id: payment-service
+            uri: lb://auth-user-service
+            predicates:
+              - Path=/api/v1/payments/**
+
+          # Spring Boot Admin Monitor
+          - id: admin-monitor
+            uri: http://localhost:9090
+            predicates:
+              - Path=/admin-monitor/**
+            filters:
+              - StripPrefix=0
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:${FRONTEND_URL:http://localhost:4200},http://127.0.0.1:4200,http://localhost:4000,http://127.0.0.1:4000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.connectsphere: DEBUG

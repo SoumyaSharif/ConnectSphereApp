@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: admin-server
+
+  # ── Security: Admin UI login credentials ──────────────────────────────
+  security:
+    user:
+      name: ${ADMIN_MONITOR_USER:admin}
+      password: ${ADMIN_MONITOR_PASSWORD:admin123}
+
+  # ── Spring Boot Admin server context path ─────────────────────────────
+  boot:
+    admin:
+      ui:
+        title: "ConnectSphere — Service Monitor"
+        brand: "<img src='assets/img/icon-spring-boot-admin.svg'><span>ConnectSphere Monitor</span>"
+      discovery:
+        # Pull service list from Eureka automatically
+        enabled: true
+
+server:
+  port: 9090
+  # Serve the Admin UI under /admin-monitor so gateway can proxy it
+  servlet:
+    context-path: /admin-monitor
+
+# ── Eureka — discover all microservices automatically ─────────────────────
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    # Monitor only — don't register the admin-server itself as a managed service
+    registerWithEureka: false
+    fetchRegistry: true
+  instance:
+    prefer-ip-address: true
+
+# ── Expose our own actuator endpoints ─────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    de.codecentric.boot.admin: INFO
+    com.connectsphere: INFO

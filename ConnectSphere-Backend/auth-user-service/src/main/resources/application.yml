@@ -1,0 +1,106 @@
+spring:
+  application:
+    name: auth-user-service
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/connectsphere_auth?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: '@Soumya24'
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            # Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET as env vars before starting
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+            scope: openid, email, profile
+            # Must match EXACTLY what is registered in Google Cloud Console
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            authorization-grant-type: authorization_code
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:sharifsoumya@gmail.com}
+    password: ${MAIL_PASSWORD:aglmdhfronflkbyc}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+
+server:
+  port: 8081
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+    prefer-ip-address: false
+    instance-id: ${spring.application.name}:${server.port}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437}
+    expiration: 86400000   # 24 hours in ms
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:${FRONTEND_URL:http://localhost:4200},http://127.0.0.1:4200,http://localhost:4000,http://127.0.0.1:4000}
+  frontend:
+    url: http://localhost:4200
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:rzp_test_ShHMWSdURfD9R6}
+    key-secret: ${RAZORPAY_KEY_SECRET:B5INPhxPjoBHCB5ay1hrvSNb}
+    amount-paise: 29900   # ₹299
+    currency: INR
+  # Inter-service URLs — uses Eureka service names for load-balanced calls
+  services:
+    post-service:     ${POST_SERVICE_URL:http://post-service}
+    comment-service:  ${COMMENT_SERVICE_URL:http://comment-service}
+    like-service:     ${LIKE_SERVICE_URL:http://like-service}
+    follow-service:   ${FOLLOW_SERVICE_URL:http://follow-service}
+  # Admin bootstrap: set ADMIN_SEED_EMAIL to auto-promote that user on first startup
+  admin:
+    seed-email: ${ADMIN_SEED_EMAIL:sharifsoumya@gmail.com}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true

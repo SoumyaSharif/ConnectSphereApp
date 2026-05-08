@@ -1,0 +1,10 @@
+com\connectsphere\search\kafka\PostEventConsumer.class
+com\connectsphere\search\entity\PostHashtag.class
+com\connectsphere\search\repository\PostHashtagRepository.class
+com\connectsphere\search\service\SearchService.class
+com\connectsphere\search\repository\HashtagRepository.class
+com\connectsphere\search\entity\Hashtag$HashtagBuilder.class
+com\connectsphere\search\SearchServiceApplication.class
+com\connectsphere\search\controller\SearchResource.class
+com\connectsphere\search\entity\PostHashtag$PostHashtagBuilder.class
+com\connectsphere\search\entity\Hashtag.class

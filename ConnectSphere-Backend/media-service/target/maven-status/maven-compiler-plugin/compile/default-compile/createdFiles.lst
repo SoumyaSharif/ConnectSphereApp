@@ -1,0 +1,11 @@
+com\connectsphere\media\controller\MediaResource.class
+com\connectsphere\media\entity\Media$MediaBuilder.class
+com\connectsphere\media\entity\Story$StoryBuilder.class
+com\connectsphere\media\service\MediaService.class
+com\connectsphere\media\MediaServiceApplication.class
+com\connectsphere\media\repository\StoryRepository.class
+com\connectsphere\media\entity\Media.class
+com\connectsphere\media\repository\MediaRepository.class
+com\connectsphere\media\config\AppConfig.class
+com\connectsphere\media\entity\Media$MediaType.class
+com\connectsphere\media\entity\Story.class

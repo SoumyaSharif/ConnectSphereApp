@@ -27,7 +27,7 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
             scope: openid, email, profile
             # Must match EXACTLY what is registered in Google Cloud Console
-            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            redirect-uri: "${OAUTH2_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}"
             authorization-grant-type: authorization_code
         provider:
           google:
@@ -69,7 +69,7 @@ app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:${FRONTEND_URL:http://localhost:4200},http://127.0.0.1:4200,http://localhost:4000,http://127.0.0.1:4000}
   frontend:
-    url: http://localhost:4200
+    url: ${FRONTEND_URL:http://localhost:4200}
   razorpay:
     key-id: ${RAZORPAY_KEY_ID:rzp_test_ShHMWSdURfD9R6}
     key-secret: ${RAZORPAY_KEY_SECRET:B5INPhxPjoBHCB5ay1hrvSNb}

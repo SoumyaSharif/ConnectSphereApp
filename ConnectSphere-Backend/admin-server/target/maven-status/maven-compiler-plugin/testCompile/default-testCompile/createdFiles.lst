@@ -1,0 +1,4 @@
+com\connectsphere\adminserver\config\AdminSecurityConfigTest$TestConfig.class
+com\connectsphere\adminserver\config\AdminSecurityConfigTest$TestController.class
+com\connectsphere\adminserver\config\AdminSecurityConfigTest.class
+com\connectsphere\adminserver\AdminServerApplicationTests.class

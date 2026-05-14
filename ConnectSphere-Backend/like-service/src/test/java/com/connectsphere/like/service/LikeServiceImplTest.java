@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -136,5 +137,63 @@ class LikeServiceImplTest {
         List<Like> likes = List.of(Like.builder().userId(USER_ID).build());
         when(likeRepository.findByUserId(USER_ID)).thenReturn(likes);
         assertThat(likeService.getLikesByUser(USER_ID)).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("getReactionSummary groups repository rows into a map")
+    void getReactionSummary() {
+        when(likeRepository.countByTargetIdAndTargetTypeGroupByReactionType(TARGET_ID, POST))
+                .thenReturn(List.of(new Object[]{"LIKE", 2L}, new Object[]{"LOVE", 1L}));
+
+        assertThat(likeService.getReactionSummary(TARGET_ID, POST))
+                .isEqualTo(Map.of("LIKE", 2L, "LOVE", 1L));
+    }
+
+    @Test
+    @DisplayName("getLikesByTarget delegates to repository")
+    void getLikesByTarget() {
+        List<Like> likes = List.of(Like.builder().targetId(TARGET_ID).build());
+        when(likeRepository.findByTargetIdAndTargetType(TARGET_ID, POST)).thenReturn(likes);
+
+        assertThat(likeService.getLikesByTarget(TARGET_ID, POST)).isSameAs(likes);
+    }
+
+    @Test
+    @DisplayName("likeTarget for comments creates comment notification when target belongs to another user")
+    void likeTarget_commentNotification() {
+        String commentId = "c1";
+        when(likeRepository.existsByUserIdAndTargetIdAndTargetType(USER_ID, commentId, Like.TargetType.COMMENT)).thenReturn(false);
+        when(likeRepository.save(any(Like.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(restTemplate.getForObject("http://comment-service/api/v1/comments/{id}", Map.class, commentId))
+                .thenReturn(Map.of("authorId", "u2", "postId", "p9"));
+
+        likeService.likeTarget(USER_ID, commentId, Like.TargetType.COMMENT, Like.ReactionType.LIKE);
+
+        verify(restTemplate).patchForObject("http://comment-service/api/v1/comments/{id}/likes/increment", null, Void.class, commentId);
+        verify(restTemplate).postForObject(
+                eq("http://notification-service/api/v1/notifications/internal"),
+                argThat(payload -> {
+                    if (!(payload instanceof Map<?, ?> map)) {
+                        return false;
+                    }
+                    return "u2".equals(map.get("recipientId"))
+                            && "COMMENT".equals(map.get("targetType"))
+                            && "/post/p9".equals(map.get("deepLinkUrl"));
+                }),
+                eq(Void.class)
+        );
+    }
+
+    @Test
+    @DisplayName("likeTarget skips notification when user likes their own post")
+    void likeTarget_ownPostDoesNotNotify() {
+        when(likeRepository.existsByUserIdAndTargetIdAndTargetType(USER_ID, TARGET_ID, POST)).thenReturn(false);
+        when(likeRepository.save(any(Like.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(restTemplate.getForObject("http://post-service/api/v1/posts/{id}", Map.class, TARGET_ID))
+                .thenReturn(Map.of("authorId", USER_ID));
+
+        likeService.likeTarget(USER_ID, TARGET_ID, POST, Like.ReactionType.LIKE);
+
+        verify(restTemplate, never()).postForObject(eq("http://notification-service/api/v1/notifications/internal"), any(), eq(Void.class));
     }
 }

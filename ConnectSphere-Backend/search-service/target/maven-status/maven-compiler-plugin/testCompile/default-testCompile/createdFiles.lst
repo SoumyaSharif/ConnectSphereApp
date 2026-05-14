@@ -1,0 +1,3 @@
+com\connectsphere\search\service\SearchServiceTest.class
+com\connectsphere\search\controller\SearchResourceTest.class
+com\connectsphere\search\kafka\PostEventConsumerTest.class

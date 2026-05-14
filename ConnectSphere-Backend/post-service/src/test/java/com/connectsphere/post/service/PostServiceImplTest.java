@@ -211,6 +211,51 @@ class PostServiceImplTest {
         assertThat(post.getCommentsCount()).isEqualTo(1L);
     }
 
+    @Test
+    @DisplayName("decrementComments: decreases commentsCount but not below 0")
+    void decrementComments_floor() {
+        Post post = activePost();
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(postRepository.save(post)).thenReturn(post);
+
+        postService.decrementComments(POST_ID);
+
+        assertThat(post.getCommentsCount()).isZero();
+    }
+
+    @Test
+    @DisplayName("incrementShares increases sharesCount by 1")
+    void incrementShares() {
+        Post post = activePost();
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(postRepository.save(post)).thenReturn(post);
+
+        postService.incrementShares(POST_ID);
+
+        assertThat(post.getSharesCount()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("changeVisibility updates the owner's post visibility")
+    void changeVisibility_success() {
+        Post post = activePost();
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(post));
+        when(postRepository.save(post)).thenReturn(post);
+
+        postService.changeVisibility(POST_ID, AUTHOR_ID, Post.Visibility.PRIVATE);
+
+        assertThat(post.getVisibility()).isEqualTo(Post.Visibility.PRIVATE);
+    }
+
+    @Test
+    @DisplayName("changeVisibility rejects non-owners")
+    void changeVisibility_forbidden() {
+        when(postRepository.findById(POST_ID)).thenReturn(Optional.of(activePost()));
+
+        assertThatThrownBy(() -> postService.changeVisibility(POST_ID, "other-user", Post.Visibility.PRIVATE))
+                .isInstanceOf(ForbiddenException.class);
+    }
+
     // ─── getPostCount() ──────────────────────────────────────────
     @Test
     @DisplayName("getPostCount: returns count for author")
